@@ -1,0 +1,24 @@
+[package]
+name = "molprint-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Core molecular graph representation, SMILES parser, and ring perception"
+keywords = ["cheminformatics", "smiles", "molecular", "chemistry", "graph"]
+categories = ["science", "algorithms"]
+readme = "README.md"
+
+[dependencies]
+petgraph = { workspace = true }
+smallvec = { workspace = true }
+thiserror = { workspace = true }
+ahash = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+[[bench]]
+name = "smiles_parsing"
+harness = false

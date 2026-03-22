@@ -1,0 +1,22 @@
+[package]
+name = "molprint-io"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Chemical file format I/O: SDF, SMILES files, FPS fingerprint files"
+keywords = ["cheminformatics", "sdf", "smiles", "fps", "molecular"]
+categories = ["science", "parser-implementations"]
+readme = "README.md"
+
+[dependencies]
+molprint-core = { path = "../molprint-core" }
+molprint-fp = { path = "../molprint-fp" }
+flate2 = { workspace = true }
+memmap2 = { workspace = true }
+thiserror = { workspace = true }
+petgraph = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

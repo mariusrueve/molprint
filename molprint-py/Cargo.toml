@@ -1,0 +1,16 @@
+[package]
+name = "molprint-py"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Python bindings for molprint"
+
+[lib]
+name = "molprint"
+crate-type = ["cdylib"]
+
+[dependencies]
+molprint-core = { path = "../crates/molprint-core" }
+molprint-fp = { path = "../crates/molprint-fp" }
+molprint-search = { path = "../crates/molprint-search" }
+pyo3 = { version = "0.21", features = ["extension-module"] }

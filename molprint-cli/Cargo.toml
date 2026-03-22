@@ -1,0 +1,23 @@
+[package]
+name = "molprint-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "CLI tool for molecular fingerprint computation and similarity search"
+keywords = ["cheminformatics", "fingerprints", "smiles", "similarity", "cli"]
+categories = ["science", "command-line-utilities"]
+readme = "README.md"
+
+[[bin]]
+name = "molprint"
+path = "src/main.rs"
+
+[dependencies]
+molprint-core = { path = "../crates/molprint-core" }
+molprint-fp = { path = "../crates/molprint-fp" }
+molprint-search = { path = "../crates/molprint-search" }
+molprint-io = { path = "../crates/molprint-io" }
+clap = { workspace = true }
+rayon = { workspace = true }

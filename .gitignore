@@ -1,0 +1,19 @@
+/target/
+.claude/
+.venv/
+
+# Generated data
+*.fp
+scripts/*.smi
+scripts/*.tsv
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Fuzz artifacts
+fuzz/corpus/
+fuzz/artifacts/

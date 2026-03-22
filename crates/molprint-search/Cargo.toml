@@ -1,0 +1,23 @@
+[package]
+name = "molprint-search"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "SIMD-accelerated similarity metrics and bulk screening"
+keywords = ["cheminformatics", "similarity", "tanimoto", "screening", "fingerprints"]
+categories = ["science", "algorithms"]
+readme = "README.md"
+
+[dependencies]
+molprint-fp = { path = "../molprint-fp" }
+molprint-core = { path = "../molprint-core" }
+rayon = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+[[bench]]
+name = "similarity"
+harness = false

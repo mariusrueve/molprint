@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly run every Monday at 03:00 UTC (for fuzz + RDKit validation jobs)
+    - cron: "0 3 * * 1"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ── Core checks ─────────────────────────────────────────────────────────────
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace -- -D warnings
+
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --check
+
+  doc:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo doc --no-deps --workspace
+
+  # ── MSRV check ───────────────────────────────────────────────────────────────
+
+  msrv:
+    name: MSRV (1.75)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.75
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace
+
+  # ── Dependency audit ─────────────────────────────────────────────────────────
+
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-audit --quiet
+      - run: cargo audit
+
+  # ── Fuzz (short CI run) ──────────────────────────────────────────────────────
+
+  fuzz:
+    name: Fuzz SMILES (60s)
+    runs-on: ubuntu-latest
+    # Only run on schedule or when parser code changes
+    if: >
+      github.event_name == 'schedule' ||
+      contains(github.event.head_commit.message, '[fuzz]')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-fuzz --quiet
+      - run: cargo +nightly fuzz run fuzz_smiles -- -max_total_time=60
+        working-directory: fuzz
+
+  # ── RDKit validation (weekly / fingerprint changes) ──────────────────────────
+
+  rdkit-validate:
+    name: RDKit MACCS Validation
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule' ||
+      contains(github.event.head_commit.modified, 'crates/molprint-fp') ||
+      contains(github.event.head_commit.modified, 'crates/molprint-core')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install conda (Miniforge)
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: rdkit-env
+          environment-file: .github/rdkit-env.yml
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Generate RDKit reference data
+        shell: bash -el {0}
+        run: python scripts/generate_reference.py
+
+      - name: Run MACCS validation test
+        run: cargo test -p molprint-fp validate_maccs_against_rdkit -- --nocapture

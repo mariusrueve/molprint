@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/molprint-core",
+    "crates/molprint-fp",
+    "crates/molprint-search",
+    "crates/molprint-io",
+    "molprint-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Marius <marius@molprint.dev>"]
+repository = "https://github.com/marius/molprint"
+description = "High-performance molecular fingerprints and similarity search in Rust"
+
+[workspace.dependencies]
+petgraph = "0.6"
+smallvec = { version = "1.13", features = ["serde"] }
+ahash = "0.8"
+rayon = "1.10"
+thiserror = "2"
+clap = { version = "4", features = ["derive"] }
+criterion = { version = "0.5", features = ["html_reports"] }
+memmap2 = "0.9"
+flate2 = "1.0"
+tempfile = "3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3

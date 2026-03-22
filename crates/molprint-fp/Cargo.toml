@@ -1,0 +1,24 @@
+[package]
+name = "molprint-fp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Molecular fingerprint algorithms: Morgan/ECFP, MACCS, topological"
+keywords = ["cheminformatics", "fingerprints", "morgan", "maccs", "similarity"]
+categories = ["science", "algorithms"]
+readme = "README.md"
+
+[dependencies]
+molprint-core = { path = "../molprint-core" }
+smallvec = { workspace = true }
+petgraph = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+molprint-search = { path = "../molprint-search" }
+
+[[bench]]
+name = "fingerprints"
+harness = false

@@ -1,0 +1,17 @@
+# Summary
+
+- [Introduction](README.md)
+- [Getting Started](getting-started/README.md)
+  - [CLI Usage](getting-started/cli.md)
+  - [Library Usage](getting-started/library.md)
+- [Architecture](architecture/README.md)
+  - [Overview](architecture/overview.md)
+  - [Molecular Graph](architecture/molecular-graph.md)
+  - [SMILES Parser](architecture/smiles-parser.md)
+  - [Ring Perception](architecture/ring-perception.md)
+  - [SMARTS Engine](architecture/smarts-engine.md)
+  - [Fingerprints](architecture/fingerprints.md)
+  - [Similarity & Screening](architecture/similarity-screening.md)
+  - [File I/O](architecture/file-io.md)
+- [Design Decisions](design-decisions.md)
+- [Learnings](learnings.md)

@@ -1,0 +1,10 @@
+[book]
+title = "molprint"
+authors = ["Marius Rueve"]
+language = "en"
+src = "src"
+
+[output.html]
+site-url = "/molprint/"
+git-repository-url = "https://github.com/mariusrueve/molprint"
+edit-url-template = "https://github.com/mariusrueve/molprint/edit/main/docs/src/{path}"
