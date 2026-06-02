@@ -61,7 +61,6 @@ mod tests {
     use molprint_core::smiles::parse_smiles;
     use molprint_fp::morgan::Morgan;
     use molprint_fp::traits::Fingerprinter;
-    use molprint_fp::FingerprintBits;
 
     #[test]
     fn test_search_self_tanimoto() {

@@ -7,6 +7,7 @@ members = [
     "crates/molprint-io",
     "molprint-cli",
 ]
+exclude = ["fuzz"]
 
 [workspace.package]
 version = "0.1.0"

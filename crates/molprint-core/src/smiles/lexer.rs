@@ -51,6 +51,8 @@ pub enum LexerError {
     InvalidCharge(usize),
     #[error("invalid ring closure number at position {0}")]
     InvalidRingClosure(usize),
+    #[error("numeric value in bracket atom overflows at position {0}")]
+    NumericOverflow(usize),
 }
 
 /// Tokenize a SMILES string into a vector of tokens.
@@ -280,7 +282,10 @@ fn parse_bracket_atom(bytes: &[u8], start: usize) -> Result<(Token, usize), Lexe
     if i < end && bytes[i].is_ascii_digit() {
         let mut num: u16 = 0;
         while i < end && bytes[i].is_ascii_digit() {
-            num = num * 10 + (bytes[i] - b'0') as u16;
+            num = num
+                .checked_mul(10)
+                .and_then(|n| n.checked_add((bytes[i] - b'0') as u16))
+                .ok_or(LexerError::NumericOverflow(i))?;
             i += 1;
         }
         isotope = Some(num);
@@ -369,7 +374,10 @@ fn parse_bracket_atom(bytes: &[u8], start: usize) -> Result<(Token, usize), Lexe
             // Numeric charge: +2, -3, etc.
             let mut mag: i8 = 0;
             while i < end && bytes[i].is_ascii_digit() {
-                mag = mag * 10 + (bytes[i] - b'0') as i8;
+                mag = mag
+                    .checked_mul(10)
+                    .and_then(|n| n.checked_add((bytes[i] - b'0') as i8))
+                    .ok_or(LexerError::NumericOverflow(i))?;
                 i += 1;
             }
             sign * mag
@@ -377,7 +385,7 @@ fn parse_bracket_atom(bytes: &[u8], start: usize) -> Result<(Token, usize), Lexe
             // Repeated: ++ or --
             let mut mag: i8 = 1;
             while i < end && (bytes[i] == b'+' || bytes[i] == b'-') {
-                mag += 1;
+                mag = mag.checked_add(1).ok_or(LexerError::NumericOverflow(i))?;
                 i += 1;
             }
             sign * mag
@@ -393,7 +401,10 @@ fn parse_bracket_atom(bytes: &[u8], start: usize) -> Result<(Token, usize), Lexe
         i += 1;
         let mut num: u16 = 0;
         while i < end && bytes[i].is_ascii_digit() {
-            num = num * 10 + (bytes[i] - b'0') as u16;
+            num = num
+                .checked_mul(10)
+                .and_then(|n| n.checked_add((bytes[i] - b'0') as u16))
+                .ok_or(LexerError::NumericOverflow(i))?;
             i += 1;
         }
         Some(num)
@@ -402,6 +413,10 @@ fn parse_bracket_atom(bytes: &[u8], start: usize) -> Result<(Token, usize), Lexe
     };
 
     // i should now be at end (the ']')
+    if i != end {
+        return Err(LexerError::UnexpectedChar(bytes[i] as char, i));
+    }
+
     let consumed_total = end - start + 1; // includes '[' and ']'
 
     Ok((
@@ -593,5 +608,29 @@ mod tests {
             }
             _ => panic!("expected BracketAtom"),
         }
+    }
+
+    #[test]
+    fn test_bracket_atom_rejects_oversized_isotope() {
+        let err = tokenize("[222222222222222222222222222K%]").unwrap_err();
+        assert!(matches!(err, LexerError::NumericOverflow(_)));
+    }
+
+    #[test]
+    fn test_bracket_atom_rejects_oversized_charge() {
+        let err = tokenize("[K+999999999999999999999999999]").unwrap_err();
+        assert!(matches!(err, LexerError::NumericOverflow(_)));
+    }
+
+    #[test]
+    fn test_bracket_atom_rejects_oversized_atom_map() {
+        let err = tokenize("[K:999999999999999999999999999]").unwrap_err();
+        assert!(matches!(err, LexerError::NumericOverflow(_)));
+    }
+
+    #[test]
+    fn test_bracket_atom_rejects_trailing_junk() {
+        let err = tokenize("[K%]").unwrap_err();
+        assert!(matches!(err, LexerError::UnexpectedChar('%', _)));
     }
 }
